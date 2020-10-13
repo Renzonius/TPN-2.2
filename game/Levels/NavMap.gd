@@ -33,10 +33,10 @@ func find_path(start, end) -> Array:
 		select_node = find_closer_nodes(select_node)
 		
 	closed_set.append(end_node)
-#	for node in closed_set:
-#		optimal_way = node_to_pos(node.position)
-	# TODO: este es el metodo principal
-	return closed_set
+	
+	optimal_way = optimal_path(closed_set)
+	
+	return optimal_way
 
 
 #### Metodo que inicializa la grilla. Para cada tile valido crea un objeto de
@@ -52,7 +52,31 @@ func init_grid(show: bool) -> void:
 #		for node in all_set:
 #			print(node.print_node_data())
 
+func optimal_path(closed_nodes : Array) -> Array:
+	var real_optimus_way : Array
+	var parent_array : Array
+	var node_parent : PathNode
+	closed_nodes.invert()
+	parent_array.append(closed_nodes[0])
+	node_parent = closed_nodes[0].parent
+	
+	var i:int = 1
+	while (closed_nodes[i] != start_node):
+		if(closed_nodes[i] == node_parent):
+			parent_array.append(closed_nodes[i])
+			node_parent = closed_nodes[i].parent
+		i += 1
+	
+	parent_array.append(start_node)
+	parent_array.invert()
 
+		
+	for node in parent_array:
+		real_optimus_way.append(node_to_pos(node.position))
+
+	return real_optimus_way
+	
+	
 #### Metodo para setear nodos start y end
 #### Pista: hay que usar el metodo de la clase PathNode "is_equal"
 func set_start_end_nodes(node: PathNode) -> void:
@@ -99,24 +123,46 @@ func find_closer_nodes(current_node: PathNode) -> PathNode:
 #### - No ser el mismo nodo en que estamos parados -
 #### Si es valido se agrega a la lista de nodos abiertos y se le asigna el nodo padre
 func open_nodes(node_position: Vector2, current_node: PathNode) -> void:
-	var node_in_all_set : bool
-	var node_in_close : bool
-
-	if(node_position != current_node.position):
-		for node in all_set:
-			if(node.position == node_position):
-				node_in_all_set = true
-		for node_close in closed_set:
-			if(node_close.position == node_position):
-				node_in_close = true
-		if(node_in_all_set and not node_in_close):
-			for node in all_set:
-				if(node.is_equal(node_position)):
-					node.parent = current_node
-					node.H = manhattan_distance(node.position, end_node.position)
-					node.G = get_diagonal(node.position, current_node.position)
-					node.F = node.G + node.H
-					open_set.append(node)
+	var is_same_node : bool = current_node.is_equal(node_position)
+	
+	var near_node: PathNode
+	for node in all_set:
+		if node.is_equal(node_position):
+			near_node = node
+	if (near_node in all_set) and (not near_node in closed_set) and (not is_same_node) and (not  near_node in open_set):
+		near_node.parent = current_node
+		
+		near_node.G =( near_node.parent.G + get_diagonal(near_node.position,current_node.position))
+		near_node.F = near_node.H + near_node.G
+		open_set.append(near_node)
+	
+	if near_node in open_set:
+		var new_G = current_node.G + ( near_node.parent.G + get_diagonal(near_node.position, current_node.position))
+		if (new_G < near_node.G):
+			near_node.parent=current_node
+			near_node.G = new_G
+			near_node.F= near_node.G + near_node.H
+	
+	
+#	var node_in_all_set : bool
+#	var node_in_close : bool
+#
+#	if(node_position != current_node.position):
+#		for node in all_set:
+#			if(node.position == node_position):
+#				node_in_all_set = true
+#		for node_close in closed_set:
+#			if(node_close.position == node_position):
+#				node_in_close = true
+#
+#		if(node_in_all_set and not node_in_close):
+#			for node in all_set:
+#				if(node.is_equal(node_position)):
+#					node.parent = current_node
+##					node.H = manhattan_distance(node.position, end_node.position)
+#					node.G = node.parent.G + get_diagonal(node.position, current_node.position)
+#					node.F = node.G + node.H
+#					open_set.append(node)
 
 
 
