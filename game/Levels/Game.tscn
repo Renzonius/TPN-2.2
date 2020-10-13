@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://assets/Map/navigation_map_point.png" type="Texture" id=1]
 [ext_resource path="res://game/Levels/NavMap.gd" type="Script" id=2]
@@ -10,6 +10,7 @@
 [ext_resource path="res://game/TileMaps/NavOpen.tscn" type="PackedScene" id=8]
 [ext_resource path="res://game/TileMaps/NavClose.tscn" type="PackedScene" id=9]
 [ext_resource path="res://game/TileMaps/NavOptimal.tscn" type="PackedScene" id=10]
+[ext_resource path="res://WhatsApp Image 2020-10-03 at 15.18.43.jpeg" type="Texture" id=11]
 
 [sub_resource type="TileSet" id=1]
 0/name = "navigation_map_point.png 0"
@@ -47,6 +48,8 @@ position = Vector2( 544, 291.158 )
 
 [node name="Player" parent="." instance=ExtResource( 3 )]
 position = Vector2( 160, 288 )
+scale = Vector2( 0.0301613, 0.0301613 )
+texture = ExtResource( 11 )
 
 [node name="NivelAnterior" parent="." instance=ExtResource( 6 )]
 nivel_anterior = "res://game/Levels/Level2.tscn"

@@ -5,7 +5,7 @@ extends TileMap
 var all_set = []
 var open_set = []
 var closed_set = []
-
+var optimal_way = []
 var start_position : Vector2 = Vector2.ZERO # Posicion del player en el viewport
 var end_position : Vector2 = Vector2.ZERO # Posicion del hongo en el viewport
 var start_node: PathNode # Nodo correspondiente a la posicion del player
@@ -32,9 +32,11 @@ func find_path(start, end) -> Array:
 	while (select_node != end_node):
 		select_node = find_closer_nodes(select_node)
 		
-	
+	closed_set.append(end_node)
+#	for node in closed_set:
+#		optimal_way = node_to_pos(node.position)
 	# TODO: este es el metodo principal
-	return []
+	return closed_set
 
 
 #### Metodo que inicializa la grilla. Para cada tile valido crea un objeto de
@@ -69,17 +71,20 @@ func find_closer_nodes(current_node: PathNode) -> PathNode:
 	var redummy_node : Vector2
 	var closer_node_list : Array
 	var position_current : Array = [Vector2(1,0), Vector2(1,1), Vector2(0,1), Vector2(-1,1), Vector2(-1,0),Vector2(-1,-1), 
-									Vector2(0,-1), Vector2(1,-1)] 
+									Vector2(0,-1), Vector2(1,-1)]
 	if(current_node != start_node):
 		open_set.erase(current_node)
-	closed_set.append(current_node)
 	
+	closed_set.append(current_node)
+
 	for position_node in position_current:
 		redummy_node = current_node.position - position_node
 		closer_node_list.append(redummy_node)
-	print(closer_node_list)
+
 	for node_position in closer_node_list:
 		open_nodes(node_position, current_node)
+	
+	dummy_node = check_new_parent_node()
 	
 	return dummy_node
 
@@ -94,22 +99,24 @@ func find_closer_nodes(current_node: PathNode) -> PathNode:
 #### - No ser el mismo nodo en que estamos parados -
 #### Si es valido se agrega a la lista de nodos abiertos y se le asigna el nodo padre
 func open_nodes(node_position: Vector2, current_node: PathNode) -> void:
-#	var node_in_all_set : bool
-#	var node_in_close : bool
-#
-#	if(node_position != current_node.position):
-#		for node in all_set:
-#			if(node.position == node_position):
-#				node_in_all_set = true
-#		for node_close in closed_set:
-#			if(node_close.position == node_position):
-#				node_in_close = true
-#		if(node_in_all_set and not node_in_close):
-#			var new_node := PathNode.new(current_node, node_position, manhattan_distance(node_position, end_node.position))
-#			open_set.append(new_node)
-	if(node_position in all_set and not node_position in closed_set and node_position != current_node.position):
-		print("asdasd")
+	var node_in_all_set : bool
+	var node_in_close : bool
 
+	if(node_position != current_node.position):
+		for node in all_set:
+			if(node.position == node_position):
+				node_in_all_set = true
+		for node_close in closed_set:
+			if(node_close.position == node_position):
+				node_in_close = true
+		if(node_in_all_set and not node_in_close):
+			for node in all_set:
+				if(node.is_equal(node_position)):
+					node.parent = current_node
+					node.H = manhattan_distance(node.position, end_node.position)
+					node.G = get_diagonal(node.position, current_node.position)
+					node.F = node.G + node.H
+					open_set.append(node)
 
 
 
@@ -138,8 +145,13 @@ func get_diagonal(node_position: Vector2, parent_position: Vector2) -> int:
 
 #### Metodo que itera en la lista de nodos abiertos y devuelve un nuevo nodo a cerrar/padre
 func check_new_parent_node() -> PathNode:
-	var dummy_parent_node: PathNode
-	return dummy_parent_node
+	var F_min_node : PathNode
+	var F_min : int = 9999
+	for node in open_set:
+		if(node.F < F_min):
+			F_min = node.F
+			F_min_node = node
+	return F_min_node
 
 
 #### Metodo que convierte a una posicion [x,y] en coordenadas [col, fila]
